@@ -19,8 +19,11 @@ class _NewsPageState extends State<NewsPage> {
   }
 
   Future<void> _refresh() async {
-    setState(() => _future = PostApi.fetch());
-    await _future;
+    final refreshed = PostApi.fetch();
+    setState(() {
+      _future = refreshed;
+    });
+    await refreshed;
   }
 
   @override
