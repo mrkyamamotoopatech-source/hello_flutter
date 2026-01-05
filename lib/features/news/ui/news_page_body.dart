@@ -2,8 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/news_page_view_model.dart';
 
-class NewsPageBody extends StatelessWidget {
+class NewsPageBody extends StatefulWidget {
   const NewsPageBody({super.key});
+
+  @override
+  State<NewsPageBody> createState() => _NewsPageBodyState();
+}
+
+class _NewsPageBodyState extends State<NewsPageBody> {
+  final _controller = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onScroll);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final vm = context.read<NewsPageViewModel>();
+    if (_controller.position.pixels >=
+        _controller.position.maxScrollExtent - 200) {
+      vm.loadMore();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +40,7 @@ class NewsPageBody extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('News Demo')),
       body: RefreshIndicator(
-        onRefresh: () => vm.load(vm.page),
+        onRefresh: () => vm.refresh(),
         child: _buildBody(context, vm),
       ),
     );
@@ -27,7 +55,7 @@ class NewsPageBody extends StatelessWidget {
       );
     }
 
-    if (vm.error != null) {
+    if (vm.error != null && vm.posts.isEmpty) {
       // エラー時も ListView で包む
       return _buildMessageList(
         context,
@@ -45,10 +73,18 @@ class NewsPageBody extends StatelessWidget {
 
     // データありのときの本来のリスト
     return ListView.separated(
+      controller: _controller,
       physics: const AlwaysScrollableScrollPhysics(), // ← これも付けておくと安心
-      itemCount: vm.posts.length,
+      itemCount: vm.posts.length + (vm.loadingMore ? 1 : 0),
       separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (_, i) {
+        if (i >= vm.posts.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
         final p = vm.posts[i];
         return ListTile(
           title: Text(p.title),
@@ -65,6 +101,7 @@ class NewsPageBody extends StatelessWidget {
   /// ローディング・エラー・空表示を「スクロール可能」にするための ListView ラッパ
   Widget _buildMessageList(BuildContext context, Widget child) {
     return ListView(
+      controller: _controller,
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         SizedBox(

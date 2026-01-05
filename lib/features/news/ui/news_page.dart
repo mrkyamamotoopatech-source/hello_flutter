@@ -9,7 +9,7 @@ class NewsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => NewsPageViewModel()..load(0),
+      create: (_) => NewsPageViewModel()..loadInitial(),
       child: const NewsPageBody(),
     );
   }

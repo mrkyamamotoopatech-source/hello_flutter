@@ -19,7 +19,7 @@ class PostApi {
 
   /// 実際にHTTPを叩く処理
   static Future<List<Post>> _fetchPosts(int page, {int pageSize = 10}) async {
-    final skip = (page - 1) * pageSize;
+    final skip = page * pageSize;
     final uri = Uri.https(
       'dummyjson.com',
       '/posts',
