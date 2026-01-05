@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hello_flutter/features/news/ui/post_detail_page.dart';
 import 'package:provider/provider.dart';
 import '../view_model/news_page_status.dart';
 import '../view_model/news_page_view_model.dart';
@@ -86,11 +87,17 @@ class _NewsPageBodyState extends State<NewsPageBody> {
 
         final p = vm.posts[i];
         return ListTile(
+          leading: Text('${i+1}'),
           title: Text(p.title),
           subtitle: Text(
             p.body,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
+          ),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => PostDetailPage(post: p),
+            ),
           ),
         );
       },
