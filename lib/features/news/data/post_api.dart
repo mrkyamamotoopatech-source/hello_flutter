@@ -8,12 +8,11 @@ class PostApi {
 
   /// 外から呼ぶメインの関数
   static Future<List<Post>> fetch(int page) async {
-    final dice = _rand.nextInt(3);
-
+    final dice = (page == 0) ? _rand.nextInt(3) : 0;
     return switch (dice) {
-      0 => await _fetchPosts(page),                // 通常：APIから取得
-      1 => <Post>[],                           // 空リスト
-      _ => throw Exception('デバッグ用に発生させたエラーです'), // エラー
+        0 => await _fetchPosts(page),                // 通常：APIから取得
+        1 => <Post>[],                           // 空リスト
+        _ => throw Exception('デバッグ用に発生させたエラーです'), // エラー
     };
   }
 

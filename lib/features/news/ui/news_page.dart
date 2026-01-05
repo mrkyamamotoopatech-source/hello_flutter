@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/news_page_view_model.dart';
+import '../viewModel/news_page_view_model.dart';
 import 'news_page_body.dart';
 
 class NewsPage extends StatelessWidget {
