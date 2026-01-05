@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../data/post_api.dart';
 import '../models/post.dart';
+import 'news_page_status.dart';
 
 class NewsPageViewModel extends ChangeNotifier {
-  bool _loading = false;
-  bool get loading => _loading;
+  NewsPageStatus _status = NewsPageStatus.initialLoading;
+  NewsPageStatus get status => _status;
 
   bool _loadingMore = false;
   bool get loadingMore => _loadingMore;
@@ -22,25 +23,39 @@ class NewsPageViewModel extends ChangeNotifier {
 
   bool _hasMore = true;
 
-  Future<void> loadInitial() => _fetch(page: 0, reset: true);
+  Future<void> loadInitial() => _fetch(
+        page: 0,
+        reset: true,
+        statusOnStart: NewsPageStatus.initialLoading,
+      );
 
-  Future<void> refresh() => _fetch(page: 0, reset: true);
+  Future<void> refresh() => _fetch(
+        page: 0,
+        reset: true,
+        statusOnStart: NewsPageStatus.refreshing,
+      );
 
   Future<void> loadMore() async {
     if (!_hasMore || _fetching) return;
     await _fetch(page: _page + 1, reset: false);
   }
 
-  Future<void> _fetch({required int page, required bool reset}) async {
+  Future<void> _fetch({
+    required int page,
+    required bool reset,
+    NewsPageStatus? statusOnStart,
+  }) async {
     if (_fetching) return;
 
     _fetching = true;
     _error = null;
 
     if (reset) {
-      _loading = true;
+      _status = statusOnStart ?? _status;
       _hasMore = true;
-      _posts = [];
+      if (_status == NewsPageStatus.initialLoading) {
+        _posts = [];
+      }
     } else {
       _loadingMore = true;
     }
@@ -53,15 +68,23 @@ class NewsPageViewModel extends ChangeNotifier {
       } else {
         _posts = [..._posts, ...result];
       }
+
       _page = page;
       _hasMore = result.isNotEmpty;
+
+      if (reset) {
+        _status =
+            result.isEmpty ? NewsPageStatus.empty : NewsPageStatus.success;
+      }
     } catch (e) {
       if (reset) {
         _error = e.toString();
+        _status = NewsPageStatus.error;
       }
     } finally {
-      _loading = false;
-      _loadingMore = false;
+      if (!reset) {
+        _loadingMore = false;
+      }
       _fetching = false;
       notifyListeners();
     }

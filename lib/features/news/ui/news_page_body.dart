@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../view_model/news_page_status.dart';
 import '../view_model/news_page_view_model.dart';
 
 class NewsPageBody extends StatefulWidget {
@@ -47,24 +48,22 @@ class _NewsPageBodyState extends State<NewsPageBody> {
   }
 
   Widget _buildBody(BuildContext context, NewsPageViewModel vm) {
-    if (vm.loading) {
-      // ローディング中も ListView で包む
+    if (vm.status == NewsPageStatus.initialLoading ||
+        (vm.status == NewsPageStatus.refreshing && vm.posts.isEmpty)) {
       return _buildMessageList(
         context,
         const CircularProgressIndicator(),
       );
     }
 
-    if (vm.error != null && vm.posts.isEmpty) {
-      // エラー時も ListView で包む
+    if (vm.status == NewsPageStatus.error) {
       return _buildMessageList(
         context,
         Text('読み込みに失敗: ${vm.error}'),
       );
     }
 
-    if (vm.posts.isEmpty) {
-      // データなしのときも ListView で包む
+    if (vm.status == NewsPageStatus.empty) {
       return _buildMessageList(
         context,
         const Text('データがありません'),
