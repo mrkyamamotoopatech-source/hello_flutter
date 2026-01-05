@@ -1,0 +1,77 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodel/news_page_view_model.dart';
+
+class NewsPageBody extends StatelessWidget {
+  const NewsPageBody({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<NewsPageViewModel>();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('News Demo')),
+      body: RefreshIndicator(
+        onRefresh: () => vm.load(vm.page),
+        child: _buildBody(context, vm),
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, NewsPageViewModel vm) {
+    if (vm.loading) {
+      // ローディング中も ListView で包む
+      return _buildMessageList(
+        context,
+        const CircularProgressIndicator(),
+      );
+    }
+
+    if (vm.error != null) {
+      // エラー時も ListView で包む
+      return _buildMessageList(
+        context,
+        Text('読み込みに失敗: ${vm.error}'),
+      );
+    }
+
+    if (vm.posts.isEmpty) {
+      // データなしのときも ListView で包む
+      return _buildMessageList(
+        context,
+        const Text('データがありません'),
+      );
+    }
+
+    // データありのときの本来のリスト
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(), // ← これも付けておくと安心
+      itemCount: vm.posts.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (_, i) {
+        final p = vm.posts[i];
+        return ListTile(
+          title: Text(p.title),
+          subtitle: Text(
+            p.body,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      },
+    );
+  }
+
+  /// ローディング・エラー・空表示を「スクロール可能」にするための ListView ラッパ
+  Widget _buildMessageList(BuildContext context, Widget child) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          child: Center(child: child),
+        ),
+      ],
+    );
+  }
+}
