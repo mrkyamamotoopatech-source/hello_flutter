@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hello_flutter/features/news/ui/post_detail_page.dart';
+import 'package:hello_flutter/features/news/ui/setting_page.dart';
 import 'package:provider/provider.dart';
 import '../view_model/news_page_status.dart';
 import '../view_model/news_page_view_model.dart';
@@ -41,6 +42,29 @@ class _NewsPageBodyState extends State<NewsPageBody> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('News Demo')),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.transparent),
+              child: Text('Menu'),
+            ),
+            ListTile(
+              title: Text('Setting'),
+              onTap: () {
+                Navigator.pop(context);
+                // open SettingMenu
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const SettingPage()
+                  )
+                );
+              },
+            )
+          ],
+        ),
+      ),
       body: RefreshIndicator(
         onRefresh: () => vm.refresh(),
         child: _buildBody(context, vm),
