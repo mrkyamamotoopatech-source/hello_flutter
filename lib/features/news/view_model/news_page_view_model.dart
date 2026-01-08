@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../data/post_repository.dart';
+import '../usecase/fetch_posts_use_case.dart';
 import '../models/post.dart';
 import 'news_page_status.dart';
 
 class NewsPageViewModel extends ChangeNotifier {
 
-  final PostRepository _repo;
-  NewsPageViewModel(this._repo);
+  final FetchPostsUseCase _fetchPosts;
+  NewsPageViewModel(this._fetchPosts);
 
   NewsPageStatus _status = NewsPageStatus.initialLoading;
   NewsPageStatus get status => _status;
@@ -66,7 +66,7 @@ class NewsPageViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await _repo.fetch(page);
+      final result = await _fetchPosts(page);
       if (reset) {
         _posts = result;
       } else {

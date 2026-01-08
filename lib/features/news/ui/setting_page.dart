@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import '../data/settings_repository.dart';
+import '../usecase/settings_use_case.dart';
 import '../view_model/settings_view_model.dart';
 
 class SettingPage extends StatelessWidget {
@@ -9,20 +9,11 @@ class SettingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<SettingsRepository>(
-      future: SettingsRepository.create(),
-      builder: (context, snap) {
-        if (!snap.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        return ChangeNotifierProvider(
-          create: (_) => SettingsViewModel(snap.data!),
-          child: const _SettingBody(),
-        );
-      },
+    return ChangeNotifierProvider(
+      create: (_) => SettingsViewModel(
+        context.read<SettingsUseCase>(),
+      ),
+      child: const _SettingBody(),
     );
   }
 }
