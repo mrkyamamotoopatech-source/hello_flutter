@@ -46,22 +46,29 @@ class _NewsPageBodyState extends State<NewsPageBody> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.transparent),
-              child: Text('Menu'),
+            const SizedBox(height: 24),
+            // 小さめヘッダー
+            Container(
+              height: kToolbarHeight, // AppBar と同じくらいの高さ
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: const Text('Menu',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
+            const Divider(height: 1),
+
             ListTile(
-              title: Text('Setting'),
+              title: const Text('Setting'),
               onTap: () {
                 Navigator.pop(context);
-                // open SettingMenu
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const SettingPage()
-                  )
+                    builder: (_) => const SettingPage(),
+                  ),
                 );
               },
-            )
+            ),
           ],
         ),
       ),

@@ -18,12 +18,8 @@ class NewsPage extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-
-        final settingsRepo = snap.data!;
-        final postRepo = PostRepository(settingsRepo);
-
         return ChangeNotifierProvider(
-          create: (_) => NewsPageViewModel(postRepo)..loadInitial(),
+          create: (_) => NewsPageViewModel(context.read<PostRepository>(),)..loadInitial(),
           child: const NewsPageBody(),
         );
       },
