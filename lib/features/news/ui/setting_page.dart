@@ -1,19 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+import '../data/settings_repository.dart';
+import '../view_model/settings_view_model.dart';
 
-class SettingPage extends StatefulWidget {
+class SettingPage extends StatelessWidget {
   const SettingPage({super.key});
 
   @override
-  State<SettingPage> createState() => _SettingPageState();
+  Widget build(BuildContext context) {
+    return FutureBuilder<SettingsRepository>(
+      future: SettingsRepository.create(),
+      builder: (context, snap) {
+        if (!snap.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        return ChangeNotifierProvider(
+          create: (_) => SettingsViewModel(snap.data!),
+          child: const _SettingBody(),
+        );
+      },
+    );
+  }
 }
 
-class _SettingPageState extends State<SettingPage> {
-  bool _debugNetwork = false;      // 通信デバッグON/OFF
-  int _pageSize = 10;              // 一度に読み込む件数
+class _SettingBody extends StatelessWidget {
+  const _SettingBody();
 
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<SettingsViewModel>();
+
+    if (vm.loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Setting')),
       body: ListView(
@@ -25,54 +51,31 @@ class _SettingPageState extends State<SettingPage> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          // 通信デバッグON/OFF
+          // DebugNetwork
           ListTile(
             title: const Text('Debug Network'),
             trailing: CupertinoSwitch(
-              value: _debugNetwork,
-              onChanged: (value) {
-                setState(() {
-                  _debugNetwork = value;
-                });
-              },
+              value: vm.debugNetwork,
+              onChanged: vm.setDebugNetwork,
             ),
-            onTap: () {
-              setState(() {
-                _debugNetwork = !_debugNetwork;
-              });
-            },
+            onTap: () => vm.setDebugNetwork(!vm.debugNetwork),
           ),
           const Divider(height: 0),
-
-          // pageSize 設定
+          // PageSize
           ListTile(
             title: const Text('Page Size'),
             trailing: DropdownButton<int>(
-              value: _pageSize,
+              value: vm.pageSize,
               items: const [
-                DropdownMenuItem(
-                  value: 5,
-                  child: Text('5'),
-                ),
-                DropdownMenuItem(
-                  value: 10,
-                  child: Text('10'),
-                ),
-                DropdownMenuItem(
-                  value: 20,
-                  child: Text('20'),
-                ),
+                DropdownMenuItem(value: 5, child: Text('5')),
+                DropdownMenuItem(value: 10, child: Text('10')),
+                DropdownMenuItem(value: 20, child: Text('20')),
               ],
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() {
-                  _pageSize = value;
-                });
+              onChanged: (v) {
+                if (v != null) vm.setPageSize(v);
               },
             ),
           ),
-
-          const SizedBox(height: 24),
         ],
       ),
     );
