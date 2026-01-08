@@ -5,26 +5,58 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:hello_flutter/features/news/models/post.dart';
+import 'package:hello_flutter/features/news/usecase/fetch_posts_use_case.dart';
+import 'package:hello_flutter/features/news/usecase/settings_use_case.dart';
 import 'package:hello_flutter/main.dart';
 
+class FakeFetchPostsUseCase implements FetchPostsUseCase {
+  FakeFetchPostsUseCase(this._handler);
+
+  final Future<List<Post>> Function(int page) _handler;
+
+  @override
+  Future<List<Post>> call(int page) => _handler(page);
+}
+
+class FakeSettingsUseCase implements SettingsUseCase {
+  bool _debugNetwork = false;
+  int _pageSize = 10;
+
+  @override
+  bool getDebugNetwork() => _debugNetwork;
+
+  @override
+  int getPageSize() => _pageSize;
+
+  @override
+  Future<void> setDebugNetwork(bool value) async {
+    _debugNetwork = value;
+  }
+
+  @override
+  Future<void> setPageSize(int value) async {
+    _pageSize = value;
+  }
+}
+
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Shows empty state when no posts are returned',
+      (WidgetTester tester) async {
+    final settingsUseCase = FakeSettingsUseCase();
+    final fetchPostsUseCase =
+        FakeFetchPostsUseCase((_) async => const <Post>[]);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.pumpWidget(
+      MyApp(
+        settingsUseCase: settingsUseCase,
+        fetchPostsUseCase: fetchPostsUseCase,
+      ),
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('データがありません'), findsOneWidget);
   });
 }
